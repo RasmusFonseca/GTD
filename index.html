@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+<style>
+
+path {
+  fill: none;
+  stroke: #000;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+      #slider-container{
+        width: 1020px;
+      }
+      #slider-text{
+        margin-top: 20px;
+      }
+
+</style>
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/overcast/jquery-ui.css" />
+
+</head>
+<body>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="rangeslider.js" charset="utf-8"></script>
+
+  <h2>Terrorism incidents with known weapon, 1971-2017</h2>
+<div id="map-container"></div>
+<div id="slider-container">
+</div>
+<div id="slider-text">
+  Years: 1971 - 2017
+</div>
+<div id="incident-info">
+  Info:
+</div>
+
+
+<script>
+var w = 1200,
+    h = 500;
+
+var path = d3.geo.path()
+    .projection(null);
+
+var svg = d3.select("#map-container").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+var xy = d3.geo.equirectangular()
+          .scale(170);
+
+var path = d3.geo.path()
+    .projection(xy);
+
+var countries = svg.append("svg:g")
+    .attr("id", "countries");
+
+d3.json("build/world-countries.json", function(collection) {
+  countries.selectAll("path")
+    .data(collection.features)
+    .enter().append("svg:path")
+    .attr("d", path);
+});
+
+var rad_scale = d3.scale.log().domain([1,100000]).range([2,10]);
+var col_scale = d3.scale.category20();
+
+
+var incidents;
+
+d3.csv('globalterrorismdb_0617dist.csv', function(gtd){
+
+  console.log(gtd);
+  gtd = gtd.filter(function(d){ 
+    return d.nkill+d.nwound > 10 && d.latitude && d.longitude && d.weaptype1_txt; 
+  });
+  console.log(gtd);
+  
+  incidents = svg.selectAll("circle").data(gtd)
+    .enter().append("circle")
+    .attr("cx", function(d){ return xy([d.longitude, d.latitude])[0]; })
+    .attr("cy", function(d){ if(isNaN(xy([d.longitude, d.latitude])[1])) console.log(d); return xy([d.longitude, d.latitude])[1]; })
+    .attr("r", function(d){ return Math.min(rad_scale(d.nkill+d.nwound),10); })
+    //.attr("fill", function(d){ return "blue"; })
+    .attr("fill", function(d){ return col_scale(d.weaptype1); })
+    .attr("fill-opacity", 0.2)
+    .on("click", function(d){
+      console.log(d);
+      $("#incident-info").html("Info:<br>"+d.scite1+"<br>"+d.scite2+"<br>"+d.scite3+"<br>Weapon: "+d.weaptype1_txt);
+    });
+
+});
+
+//$( function() {
+//    $( "#slider-container" ).slider({
+//      range: true,
+//      min: 1971,
+//      max: 2017,
+//      values: [ 1971, 2017 ],
+//      slide: function( event, ui ) {
+//        $("#slider-text").text("Years: "+ ui.values[0] + " - " + ui.values[1] );
+//        if(!incidents) return;
+//        incidents.attr("opacity", function(d){ 
+//          return (d.iyear >= ui.values[0] && d.iyear <= ui.values[1])?1.0:0.0;
+//        });
+//      }
+//    });
+//});
+
+var slider = initSlider("slider-container");
+slider.rangeDomainStart = 1971;
+slider.rangeDomainEnd = 2017;
+slider.rangeStart = 1971;
+slider.rangeEnd = 2017;
+slider.update();
+    slider.onchange = function(){
+      var start = parseInt(slider.rangeStart);
+      var end = parseInt(slider.rangeEnd);
+      $("#slider-text").text("Years: "+ start + " - " + end );
+      incidents.attr("opacity", function(d){ 
+        return (d.iyear >= start && d.iyear <= end)?1.0:0.0;
+      });
+    };
+
+</script>
+
+</body>
+</head>
