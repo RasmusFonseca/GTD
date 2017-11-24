@@ -30,7 +30,8 @@ path {
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="rangeslider.js" charset="utf-8"></script>
 
-  <h2>Terrorism incidents with known weapon, 1971-2017</h2>
+  <h2>Terrorism incidents, 1971-2017</h2>
+  <p>Bubble sizes indicate number of casualties and color indicates attack type.</p>
 <div id="map-container"></div>
 <div id="slider-container">
 </div>
@@ -62,7 +63,7 @@ var path = d3.geo.path()
 var countries = svg.append("svg:g")
     .attr("id", "countries");
 
-d3.json("build/world-countries.json", function(collection) {
+d3.json("world-countries.json", function(collection) {
   countries.selectAll("path")
     .data(collection.features)
     .enter().append("svg:path")
@@ -75,11 +76,11 @@ var col_scale = d3.scale.category20();
 
 var incidents;
 
-d3.csv('globalterrorismdb_0617dist.csv', function(gtd){
+d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
 
   console.log(gtd);
   gtd = gtd.filter(function(d){ 
-    return d.nkill+d.nwound > 10 && d.latitude && d.longitude && d.weaptype1_txt; 
+    return d.nkill+d.nwound > 10 && d.latitude && d.longitude && d.attacktype1_txt; 
   });
   console.log(gtd);
   
@@ -89,11 +90,12 @@ d3.csv('globalterrorismdb_0617dist.csv', function(gtd){
     .attr("cy", function(d){ if(isNaN(xy([d.longitude, d.latitude])[1])) console.log(d); return xy([d.longitude, d.latitude])[1]; })
     .attr("r", function(d){ return Math.min(rad_scale(d.nkill+d.nwound),10); })
     //.attr("fill", function(d){ return "blue"; })
-    .attr("fill", function(d){ return col_scale(d.weaptype1); })
+    //.attr("fill", function(d){ return col_scale(d.weaptype1); })
+    .attr("fill", function(d){ return col_scale(d.attacktype1); })
     .attr("fill-opacity", 0.2)
     .on("click", function(d){
       console.log(d);
-      $("#incident-info").html("Info:<br>"+d.scite1+"<br>"+d.scite2+"<br>"+d.scite3+"<br>Weapon: "+d.weaptype1_txt);
+      $("#incident-info").html("Info:<br>"+d.scite1+"<br>"+d.scite2+"<br>"+d.scite3+"<br>Weapon: "+d.weaptype1_txt+"<br>Attack type: "+d.attacktype1_txt);
     });
 
 });
