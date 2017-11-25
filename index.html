@@ -21,7 +21,6 @@ path {
       }
 
 </style>
-<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/overcast/jquery-ui.css" />
 
 </head>
 <body>
@@ -95,29 +94,28 @@ d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
     //.attr("fill", function(d){ return "blue"; })
     //.attr("fill", function(d){ return col_scale(d.weaptype1); })
     .attr("fill", function(d){ return col_scale(d.attacktype1); })
-    .attr("fill-opacity", 0.2)
+    .attr("fill-opacity", 0.35)
     .on("click", function(d){
       console.log(d);
-      $("#incident-info").html("Info:<br>"+d.scite1+"<br>"+d.scite2+"<br>"+d.scite3+"<br>Weapon: "+d.weaptype1_txt+"<br>Attack type: "+d.attacktype1_txt);
+      var descr_string = "Info: "+d.summary+"<br>";
+      if(d.scite1){
+          descr_string += "<ul>";
+          descr_string += "<li>" + d.scite1 + "</li><br>";
+          if(d.scite2) descr_string += "<li>" + d.scite2 + "</li><br>";
+          if(d.scite3) descr_string += "<li>" + d.scite3 + "</li><br>";
+          descr_string += "</ul>";
+      }
+      if(d.weaptype1_txt) descr_string += "Weapon type: " + d.weaptype1_txt + "<br>";
+      if(d.attacktype1_txt) descr_string += "Attack type: " + d.attacktype1_txt + "<br>";
+        
+      $("#incident-info").html(descr_string);
+
+      incidents.attr("stroke-width", 0);
+      d3.select(this).attr("stroke-width", 3)
+        .attr("stroke", "#3070EE");
     });
 
 });
-
-//$( function() {
-//    $( "#slider-container" ).slider({
-//      range: true,
-//      min: 1971,
-//      max: 2017,
-//      values: [ 1971, 2017 ],
-//      slide: function( event, ui ) {
-//        $("#slider-text").text("Years: "+ ui.values[0] + " - " + ui.values[1] );
-//        if(!incidents) return;
-//        incidents.attr("opacity", function(d){ 
-//          return (d.iyear >= ui.values[0] && d.iyear <= ui.values[1])?1.0:0.0;
-//        });
-//      }
-//    });
-//});
 
 var slider = initSlider("slider-container");
 slider.rangeDomainStart = 1971;
@@ -125,14 +123,14 @@ slider.rangeDomainEnd = 2017;
 slider.rangeStart = 1971;
 slider.rangeEnd = 2017;
 slider.update();
-    slider.onchange = function(){
-      var start = parseInt(slider.rangeStart);
-      var end = parseInt(slider.rangeEnd);
-      $("#slider-text").text("Years: "+ start + " - " + end );
-      incidents.attr("opacity", function(d){ 
-        return (d.iyear >= start && d.iyear <= end)?1.0:0.0;
-      });
-    };
+slider.onchange = function(){
+  var start = parseInt(slider.rangeStart);
+  var end = parseInt(slider.rangeEnd);
+  $("#slider-text").text("Years: "+ start + " - " + end );
+  incidents.attr("opacity", function(d){ 
+      return (d.iyear >= start && d.iyear <= end)?1.0:0.0;
+  });
+};
 
 </script>
 
