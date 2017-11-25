@@ -118,8 +118,37 @@ function update(){
 
   incidents = svg.selectAll("circle")
     .data(gtd);
+
   incidents
     .enter().append("circle")
+    .attr("cx", function(d){ return xy([d.longitude, d.latitude])[0]; })
+    .attr("cy", function(d){ if(isNaN(xy([d.longitude, d.latitude])[1])) console.log(d); return xy([d.longitude, d.latitude])[1]; })
+    .attr("r", function(d){ return Math.min(rad_scale(d.nkill+d.nwound),10); })
+    //.attr("fill", function(d){ return "blue"; })
+    //.attr("fill", function(d){ return col_scale(d.weaptype1); })
+    .attr("fill", function(d){ return col_scale(d.attacktype1); })
+    .attr("fill-opacity", 0.35)
+    .on("click", function(d){
+      console.log(d);
+      var descr_string = "Info: "+d.summary+"<br>";
+      if(d.scite1){
+          descr_string += "<ul>";
+          descr_string += "<li>" + d.scite1 + "</li><br>";
+          if(d.scite2) descr_string += "<li>" + d.scite2 + "</li><br>";
+          if(d.scite3) descr_string += "<li>" + d.scite3 + "</li><br>";
+          descr_string += "</ul>";
+      }
+      if(d.weaptype1_txt) descr_string += "Weapon type: " + d.weaptype1_txt + "<br>";
+      if(d.attacktype1_txt) descr_string += "Attack type: " + d.attacktype1_txt + "<br>";
+        
+      $("#incident-info").html(descr_string);
+
+      incidents.attr("stroke-width", 0);
+      d3.select(this).attr("stroke-width", 3)
+        .attr("stroke", "#3070EE");
+    });
+
+  incidents
     .attr("cx", function(d){ return xy([d.longitude, d.latitude])[0]; })
     .attr("cy", function(d){ if(isNaN(xy([d.longitude, d.latitude])[1])) console.log(d); return xy([d.longitude, d.latitude])[1]; })
     .attr("r", function(d){ return Math.min(rad_scale(d.nkill+d.nwound),10); })
