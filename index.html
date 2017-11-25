@@ -76,7 +76,24 @@ var rad_scale = d3.scale.log().domain([1,100000]).range([2,10]);
 var col_scale = d3.scale.category20();
 
 
-var incidents;
+
+var slider = initSlider("slider-container");
+slider.rangeDomainStart = 1971;
+slider.rangeDomainEnd = 2017;
+slider.rangeStart = 1971;
+slider.rangeEnd = 2017;
+slider.update();
+slider.onchange = function(){
+  var start = parseInt(slider.rangeStart);
+  var end = parseInt(slider.rangeEnd);
+  $("#slider-text").text("Years: "+ start + " - " + end );
+  //incidents.attr("opacity", function(d){ 
+  //    return (d.iyear >= start && d.iyear <= end)?1.0:0.0;
+  //});
+  update();
+};
+
+var gtd_data;
 
 d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
 
@@ -85,8 +102,23 @@ d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
     return d.nkill+d.nwound > 10 && d.latitude && d.longitude && d.attacktype1_txt; 
   });
   console.log(gtd);
-  
-  incidents = svg.selectAll("circle").data(gtd)
+  gtd_data = gtd;
+  update();
+});
+
+var incidents;
+
+function update(){
+  var start = parseInt(slider.rangeStart);
+  var end = parseInt(slider.rangeEnd);
+
+  var gtd = gtd_data.filter(function(d){
+     return (d.iyear >= start && d.iyear <= end);
+  });
+
+  incidents = svg.selectAll("circle")
+    .data(gtd);
+  incidents
     .enter().append("circle")
     .attr("cx", function(d){ return xy([d.longitude, d.latitude])[0]; })
     .attr("cy", function(d){ if(isNaN(xy([d.longitude, d.latitude])[1])) console.log(d); return xy([d.longitude, d.latitude])[1]; })
@@ -115,22 +147,9 @@ d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
         .attr("stroke", "#3070EE");
     });
 
-});
+  incidents.exit().remove();
 
-var slider = initSlider("slider-container");
-slider.rangeDomainStart = 1971;
-slider.rangeDomainEnd = 2017;
-slider.rangeStart = 1971;
-slider.rangeEnd = 2017;
-slider.update();
-slider.onchange = function(){
-  var start = parseInt(slider.rangeStart);
-  var end = parseInt(slider.rangeEnd);
-  $("#slider-text").text("Years: "+ start + " - " + end );
-  incidents.attr("opacity", function(d){ 
-      return (d.iyear >= start && d.iyear <= end)?1.0:0.0;
-  });
-};
+}
 
 </script>
 
