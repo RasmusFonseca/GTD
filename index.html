@@ -95,8 +95,7 @@ slider.onchange = function(){
 
 var gtd_data;
 
-d3.csv('globalterrorismdb_0617dist_reduced.csv', function(gtd){
-
+d3.csv('globalterrorismdb_0617dist_reduced3.csv', function(gtd){
   console.log(gtd);
   gtd = gtd.filter(function(d){ 
     return d.nkill+d.nwound > 10 && d.latitude && d.longitude && d.attacktype1_txt; 
